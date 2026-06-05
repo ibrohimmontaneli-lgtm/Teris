@@ -1,0 +1,1554 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern Minimalist Tetris with Offline Audio Engine</title>
+    <style>
+        :root {
+            /* Тёмная тема (по умолчанию) - глубокие темные переливы */
+            --bg-gradient: linear-gradient(-45deg, #0e1013, #15101f, #0c161d, #1a0f1d);
+            --panel-bg: rgba(28, 30, 36, 0.75);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --text-color: #f1f2f6;
+            --text-secondary: #a0aec0;
+            --btn-gradient: linear-gradient(135deg, #4f46e5, #0ea5e9);
+            --panel-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+            --back-btn-bg: rgba(255, 255, 255, 0.05);
+            --font-family: 'Segoe UI', Roboto, Helvetica, sans-serif;
+        }
+
+        /* Светлая тема - нежные пастельные переливы */
+        body.light-theme {
+            --bg-gradient: linear-gradient(-45deg, #e4e9f0, #e9e3f5, #e0f2fe, #f5e3e6);
+            --panel-bg: rgba(255, 255, 255, 0.85);
+            --border-color: rgba(0, 0, 0, 0.08);
+            --text-color: #1e293b;
+            --text-secondary: #64748b;
+            --btn-gradient: linear-gradient(135deg, #3b82f6, #10b981);
+            --panel-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+            --back-btn-bg: rgba(0, 0, 0, 0.05);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background: var(--bg-gradient);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            transition: background 0.5s ease, color 0.5s ease;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            max-width: 500px;
+            padding: 20px;
+            text-align: center;
+            opacity: 1;
+            transform: scale(1);
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+
+        .screen.hidden {
+            display: none !important;
+            opacity: 0;
+            transform: scale(0.9);
+            pointer-events: none;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .glass-panel {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            padding: 35px;
+            box-shadow: var(--panel-shadow);
+            width: 100%;
+            position: relative;
+            transition: background 0.5s ease, border-color 0.5s ease, box-shadow 0.5s ease;
+        }
+
+        h1.screen-title {
+            font-size: 2.8rem;
+            font-weight: 800;
+            letter-spacing: 3px;
+            margin-bottom: 25px;
+            text-transform: uppercase;
+            color: var(--text-color);
+            text-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            transition: color 0.5s ease;
+        }
+
+        .btn {
+            background: var(--btn-gradient);
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            padding: 16px 45px;
+            font-size: 1.15rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            width: 100%;
+            max-width: 260px;
+            margin-bottom: 35px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+            filter: brightness(1.05);
+        }
+
+        .btn:active {
+            transform: translateY(1px);
+        }
+
+        .settings-container {
+            margin-top: 15px;
+            width: 100%;
+            border-top: 1px solid var(--border-color);
+            padding-top: 20px;
+            transition: border-color 0.5s ease;
+        }
+
+        .settings-title {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 15px;
+            color: var(--text-secondary);
+            font-weight: 700;
+            transition: color 0.5s ease;
+        }
+
+        .toggle-theme-wrapper {
+            display: flex;
+            background: rgba(0, 0, 0, 0.15);
+            border-radius: 12px;
+            padding: 4px;
+            gap: 4px;
+            border: 1px solid var(--border-color);
+            transition: background 0.5s ease, border-color 0.5s ease;
+        }
+
+        body.light-theme .toggle-theme-wrapper {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        .theme-switch-btn {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--text-color);
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.25s ease;
+            opacity: 0.6;
+        }
+
+        .theme-switch-btn.active {
+            background: var(--panel-bg);
+            opacity: 1;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            color: var(--text-color);
+        }
+
+        #game-screen {
+            max-width: 650px;
+        }
+
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            margin-bottom: 15px;
+        }
+
+        .btn-back {
+            background: var(--back-btn-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            color: var(--text-color);
+            padding: 10px 14px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-back:hover {
+            background: rgba(0, 0, 0, 0.08);
+            border-color: var(--text-color);
+        }
+
+        body.light-theme .btn-back:hover {
+            background: rgba(0, 0, 0, 0.04);
+        }
+
+        .btn-back svg {
+            width: 16px;
+            height: 16px;
+            stroke-width: 2.5;
+        }
+
+        .game-area {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            align-items: flex-start;
+            width: 100%;
+        }
+
+        .canvas-container {
+            border: 2px solid var(--border-color);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: var(--panel-shadow);
+            background: #000;
+            position: relative;
+            transition: border-color 0.5s ease, box-shadow 0.5s ease;
+        }
+
+        @keyframes shake {
+            0% { transform: translate(0, 0); }
+            15% { transform: translate(-3px, 1px); }
+            30% { transform: translate(3px, -1px); }
+            45% { transform: translate(-2px, -1px); }
+            60% { transform: translate(2px, 2px); }
+            75% { transform: translate(-1px, 1px); }
+            100% { transform: translate(0, 0); }
+        }
+
+        .shake {
+            animation: shake 0.25s cubic-bezier(.36,.07,.19,.97) both;
+        }
+
+        #tetris-canvas {
+            display: block;
+            width: 280px;
+            height: 560px;
+        }
+
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 140px;
+        }
+
+        .sidebar-panel {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 12px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            transition: all 0.5s ease;
+        }
+
+        body.light-theme .sidebar-panel {
+            background: rgba(0, 0, 0, 0.02);
+        }
+
+        .panel-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+            font-weight: 700;
+            transition: color 0.5s ease;
+        }
+
+        .panel-value {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--text-color);
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), color 0.5s ease;
+        }
+
+        .score-pulse {
+            transform: scale(1.25);
+        }
+
+        .next-preview-box {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 90px;
+        }
+
+        #next-canvas {
+            width: 80px;
+            height: 80px;
+        }
+
+        .controls-panel {
+            width: 100%;
+            margin-top: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .controls-row {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-ctrl {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            color: var(--text-color);
+            width: 52px;
+            height: 52px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        body.light-theme .btn-ctrl {
+            background: rgba(0, 0, 0, 0.02);
+        }
+
+        .btn-ctrl:hover {
+            background: rgba(0, 0, 0, 0.08);
+            border-color: var(--text-color);
+        }
+
+        .btn-ctrl:active {
+            transform: scale(0.9);
+        }
+
+        .btn-ctrl svg {
+            width: 24px;
+            height: 24px;
+            stroke-width: 2.2;
+            stroke: currentColor;
+            fill: none;
+        }
+
+        .btn-ctrl.btn-wide {
+            width: 114px;
+        }
+
+        .modal {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(15, 16, 20, 0.92);
+            backdrop-filter: blur(8px);
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 16px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            padding: 20px;
+        }
+
+        body.light-theme .modal {
+            background: rgba(255, 255, 255, 0.95);
+        }
+
+        .modal.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-title {
+            font-size: 1.8rem;
+            text-transform: uppercase;
+            color: var(--text-color);
+            margin-bottom: 12px;
+            font-weight: 800;
+        }
+
+        .modal-text {
+            font-size: 1.1rem;
+            margin-bottom: 25px;
+            color: var(--text-secondary);
+        }
+
+        .btn-modal {
+            background: var(--btn-gradient);
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            padding: 12px 30px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .btn-modal:hover {
+            transform: scale(1.03);
+        }
+
+        .keyboard-legend {
+            margin-top: 12px;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            text-align: center;
+            letter-spacing: 0.5px;
+        }
+
+        @media (max-width: 480px) {
+            .game-area {
+                flex-direction: column;
+                align-items: center;
+                gap: 15px;
+            }
+            .sidebar {
+                flex-direction: row;
+                width: 100%;
+                justify-content: space-between;
+            }
+            .sidebar-panel {
+                flex: 1;
+                padding: 8px;
+            }
+            #tetris-canvas {
+                width: 230px;
+                height: 460px;
+            }
+            .next-preview-box {
+                height: 60px;
+            }
+            #next-canvas {
+                width: 60px;
+                height: 60px;
+            }
+        }
+    </style>
+</head>
+<body class="dark-theme">
+
+    <!-- ГЛАВНОЕ МЕНЮ -->
+    <div id="main-menu" class="screen">
+        <div class="glass-panel">
+            <h1 class="screen-title">Тетрис</h1>
+            
+            <button class="btn" id="play-button" onclick="showGameScreen(); SoundFX.play('click')">
+                <svg viewBox="0 0 24 24" stroke="currentColor" style="width: 22px; height: 22px; fill: currentColor;">
+                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                </svg>
+                Играть
+            </button>
+
+            <!-- Переключатель темы -->
+            <div class="settings-container">
+                <div class="settings-title">Оформление</div>
+                <div class="toggle-theme-wrapper">
+                    <button class="theme-switch-btn active" id="dark-theme-btn" onclick="setTheme('dark'); SoundFX.play('click')">Тёмная</button>
+                    <button class="theme-switch-btn" id="light-theme-btn" onclick="setTheme('light'); SoundFX.play('click')">Светлая</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ИГРОВОЙ ЭКРАН -->
+    <div id="game-screen" class="screen hidden">
+        <div class="game-header">
+            <button class="btn-back" onclick="showMainMenu(); SoundFX.play('click')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+                Меню
+            </button>
+            
+            <div style="display: flex; gap: 6px; align-items: center;">
+                <!-- Кнопка Звуковых Эффектов -->
+                <button class="btn-back" onclick="SoundFX.toggleSfx(); SoundFX.play('click')" style="padding: 10px;" title="Звуковые эффекты">
+                    <svg id="sfx-on-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                        <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                    </svg>
+                    <svg id="sfx-off-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="hidden">
+                        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                        <line x1="23" y1="9" x2="17" y2="15"></line>
+                        <line x1="17" y1="9" x2="23" y2="15"></line>
+                    </svg>
+                </button>
+                
+                <!-- Кнопка Фоновой Музыки -->
+                <button class="btn-back" onclick="SoundFX.toggleMusic(); SoundFX.play('click')" style="padding: 10px;" title="Музыка">
+                    <svg id="music-on-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M9 18V5l12-2v13"></path>
+                        <circle cx="6" cy="18" r="3"></circle>
+                        <circle cx="18" cy="16" r="3"></circle>
+                    </svg>
+                    <svg id="music-off-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="hidden">
+                        <path d="M9 18V5l12-2v13M1 1l22 22"></path>
+                        <circle cx="6" cy="18" r="3"></circle>
+                        <circle cx="18" cy="16" r="3"></circle>
+                    </svg>
+                </button>
+
+                <!-- Кнопка Паузы -->
+                <button class="btn-back" onclick="togglePause(); SoundFX.play('click')" style="padding: 10px;" title="Пауза">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <rect x="6" y="4" width="4" height="16"></rect>
+                        <rect x="14" y="4" width="4" height="16"></rect>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <div class="glass-panel" style="padding: 20px;">
+            <div class="game-area">
+                <div class="canvas-container">
+                    <canvas id="tetris-canvas" width="300" height="600"></canvas>
+                    
+                    <!-- Модальное окно Паузы -->
+                    <div id="pause-modal" class="modal">
+                        <div class="modal-title">Пауза</div>
+                        <div class="modal-text">Игра приостановлена</div>
+                        <button class="btn-modal" onclick="togglePause(); SoundFX.play('click')">Продолжить</button>
+                    </div>
+
+                    <!-- Модальное окно Игры Окончена -->
+                    <div id="game-over-modal" class="modal">
+                        <div class="modal-title">Конец Игры</div>
+                        <div class="modal-text">Ваш результат: <span id="final-score" style="font-weight: 800; color: var(--text-color);">0</span></div>
+                        <button class="btn-modal" onclick="startNewGame(); SoundFX.play('click')">Начать заново</button>
+                    </div>
+                </div>
+
+                <div class="sidebar">
+                    <div class="sidebar-panel">
+                        <div class="panel-label">След. Блок</div>
+                        <div class="next-preview-box">
+                            <canvas id="next-canvas" width="80" height="80"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="sidebar-panel">
+                        <div class="panel-label">Очки</div>
+                        <div id="score-val" class="panel-value">0</div>
+                    </div>
+
+                    <div class="sidebar-panel">
+                        <div class="panel-label">Уровень</div>
+                        <div id="level-val" class="panel-value">1</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Контроллеры -->
+            <div class="controls-panel">
+                <div class="controls-row">
+                    <button class="btn-ctrl" onclick="playerMove(-1)" title="Влево">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <polyline points="15 18 9 12 15 6"></polyline>
+                        </svg>
+                    </button>
+                    <button class="btn-ctrl" onclick="playerRotate(1)" title="Повернуть">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path d="M23 4v6h-6"></path>
+                            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+                        </svg>
+                    </button>
+                    <button class="btn-ctrl" onclick="playerMove(1)" title="Вправо">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                    </button>
+                </div>
+                <div class="controls-row">
+                    <button class="btn-ctrl btn-wide" onclick="playerDrop()" title="Мягкое Ускорение">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                    </button>
+                    <button class="btn-ctrl btn-wide" onclick="playerHardDrop()" title="Мгновенное падение">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <polyline points="7 13 12 18 17 13"></polyline>
+                            <polyline points="7 6 12 11 17 6"></polyline>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="keyboard-legend">
+                Клавиатура: стрелки Влево/Вправо • Вверх (вращение) • Вниз (ускорение) • Пробел (падение) • P (пауза)
+            </div>
+        </div>
+    </div>
+
+    <!-- ИГРОВАЯ ЛОГИКА И ЗВУКОВОЙ ДВИЖОК -->
+    <script>
+        // --- ДВИЖОК ЭФФЕКТОВ И ПРОИГРЫВАТЕЛЬ МУЗЫКИ ---
+        const SoundFX = {
+            sfxMuted: false,
+            musicMuted: false,
+            initialized: false,
+            isOfflineMode: false, // Автоматически переключится в true, если нет сети
+            audioCtx: null,
+            buffers: {},
+            urls: {
+                'move': 'https://raw.githubusercontent.com/shixinhuang99/sxtetris/master/src/global/assets/move.wav',
+                'rotate': 'https://raw.githubusercontent.com/shixinhuang99/sxtetris/master/src/global/assets/move.wav',
+                'drop': 'https://raw.githubusercontent.com/shixinhuang99/sxtetris/master/src/global/assets/lock.wav',
+                'clear': 'https://raw.githubusercontent.com/shixinhuang99/sxtetris/master/src/global/assets/clear.mp3',
+                'gameover': 'https://raw.githubusercontent.com/shixinhuang99/sxtetris/master/src/global/assets/game_over.wav',
+                'click': 'https://raw.githubusercontent.com/shixinhuang99/sxtetris/master/src/global/assets/menu.wav'
+            },
+            
+            init() {
+                if (this.initialized) return;
+                this.initialized = true;
+                
+                // Проверяем наличие подключения к сети
+                this.isOfflineMode = !navigator.onLine;
+                
+                if (!this.isOfflineMode) {
+                    // Пытаемся предзагрузить сетевые звуки
+                    for (const [name, url] of Object.entries(this.urls)) {
+                        const audio = new Audio(url);
+                        audio.preload = 'auto';
+                        audio.addEventListener('error', () => {
+                            // Если произошла ошибка сети, переходим на автономный режим
+                            this.isOfflineMode = true;
+                        });
+                        this.buffers[name] = audio;
+                    }
+                }
+                
+                // Инициализируем аудиоконтекст для автономного синтезатора
+                try {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    if (AudioContext) {
+                        this.audioCtx = new AudioContext();
+                        this.offlineSynth.init(this.audioCtx);
+                    }
+                } catch(e) {
+                    console.warn("Браузер не поддерживает локальный синтез звука", e);
+                }
+                
+                this.music.init();
+            },
+            
+            toggleSfx() {
+                this.sfxMuted = !this.sfxMuted;
+                const onSvg = document.getElementById('sfx-on-svg');
+                const offSvg = document.getElementById('sfx-off-svg');
+                if (this.sfxMuted) {
+                    onSvg.classList.add('hidden');
+                    offSvg.classList.remove('hidden');
+                } else {
+                    onSvg.classList.remove('hidden');
+                    offSvg.classList.add('hidden');
+                }
+            },
+            
+            toggleMusic() {
+                this.musicMuted = !this.musicMuted;
+                const onSvg = document.getElementById('music-on-svg');
+                const offSvg = document.getElementById('music-off-svg');
+                if (this.musicMuted) {
+                    onSvg.classList.add('hidden');
+                    offSvg.classList.remove('hidden');
+                } else {
+                    onSvg.classList.remove('hidden');
+                    offSvg.classList.add('hidden');
+                }
+                this.music.setMute(this.musicMuted);
+            },
+            
+            play(type) {
+                this.init();
+                if (this.sfxMuted) return;
+                
+                if (this.isOfflineMode) {
+                    this.offlineSynth.playSFX(type);
+                } else {
+                    const cached = this.buffers[type];
+                    if (cached) {
+                        const clone = cached.cloneNode(true);
+                        clone.volume = 0.4;
+                        if (type === 'rotate') clone.playbackRate = 1.35;
+                        
+                        clone.play().catch(e => {
+                            // Если воспроизведение сорвалось (например, пропал интернет), задействуем синтезатор
+                            this.isOfflineMode = true;
+                            this.offlineSynth.playSFX(type);
+                        });
+                    } else {
+                        this.offlineSynth.playSFX(type);
+                    }
+                }
+            },
+
+            // --- МОДУЛЬ УЮТНОЙ АКУСТИЧЕСКОЙ МУЗЫКИ (GITHUB + OFFLINE FALLBACK) ---
+            music: {
+                audio: null,
+                
+                init() {
+                    if (SoundFX.isOfflineMode) return;
+                    if (this.audio) return;
+                    
+                    this.audio = new Audio('https://raw.githubusercontent.com/necauqua/quantum-loops/master/www/assets/background.mp3');
+                    this.audio.loop = true;
+                    this.audio.volume = SoundFX.musicMuted ? 0.0 : 0.35;
+                    
+                    this.audio.addEventListener('error', () => {
+                        // При ошибке сетевого аудио переключаемся на офлайн-синтезатор музыки
+                        SoundFX.isOfflineMode = true;
+                        this.audio = null;
+                        SoundFX.offlineSynth.startMusic();
+                    });
+                },
+                
+                start() {
+                    if (SoundFX.isOfflineMode) {
+                        SoundFX.offlineSynth.startMusic();
+                        return;
+                    }
+                    this.init();
+                    if (this.audio) {
+                        this.audio.play().catch(e => {
+                            SoundFX.isOfflineMode = true;
+                            SoundFX.offlineSynth.startMusic();
+                        });
+                    }
+                },
+                
+                pause() {
+                    if (SoundFX.isOfflineMode) {
+                        SoundFX.offlineSynth.stopMusic();
+                        return;
+                    }
+                    if (this.audio) {
+                        this.audio.pause();
+                    }
+                },
+                
+                stop() {
+                    if (SoundFX.isOfflineMode) {
+                        SoundFX.offlineSynth.stopMusic();
+                        return;
+                    }
+                    if (this.audio) {
+                        this.audio.pause();
+                        this.audio.currentTime = 0; 
+                    }
+                },
+                
+                setMute(isMuted) {
+                    if (SoundFX.isOfflineMode) return;
+                    if (this.audio) {
+                        this.audio.volume = isMuted ? 0.0 : 0.35;
+                    }
+                }
+            },
+
+            // --- КРАСИВЫЙ И ТЕПЛЫЙ ОФЛАЙН-СИНТЕЗАТОР (БЕЗ ИНТЕРНЕТА) ---
+            offlineSynth: {
+                ctx: null,
+                filter: null,
+                delay: null,
+                feedback: null,
+                musicInterval: null,
+                currentStep: 0,
+                
+                init(ctx) {
+                    this.ctx = ctx;
+                    
+                    // Общий низкочастотный фильтр для создания теплого, мягкого и уютного аналогового звука
+                    this.filter = ctx.createBiquadFilter();
+                    this.filter.type = 'lowpass';
+                    this.filter.frequency.setValueAtTime(700, ctx.currentTime); 
+                    this.filter.connect(ctx.destination);
+                    
+                    // Пространственное эхо
+                    this.delay = ctx.createDelay(1.0);
+                    this.feedback = ctx.createGain();
+                    this.delay.delayTime.value = 0.35;
+                    this.feedback.gain.value = 0.4;
+                    
+                    this.delay.connect(this.feedback);
+                    this.feedback.connect(this.delay);
+                    this.delay.connect(this.filter); // Направляем эхо на фильтр мягкости
+                },
+                
+                playSFX(type) {
+                    if (!this.ctx) return;
+                    if (this.ctx.state === 'suspended') this.ctx.resume();
+                    const now = this.ctx.currentTime;
+                    
+                    if (type === 'move' || type === 'click') {
+                        // Очень мягкий аналоговый щелчок
+                        const osc = this.ctx.createOscillator();
+                        const gain = this.ctx.createGain();
+                        osc.connect(gain);
+                        gain.connect(this.filter);
+                        
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(200, now);
+                        osc.frequency.exponentialRampToValueAtTime(100, now + 0.05);
+                        
+                        gain.gain.setValueAtTime(0.12, now);
+                        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+                        
+                        osc.start(now);
+                        osc.stop(now + 0.05);
+                    } 
+                    else if (type === 'rotate') {
+                        // Мягкий упругий звук прокрутки
+                        const osc = this.ctx.createOscillator();
+                        const gain = this.ctx.createGain();
+                        osc.connect(gain);
+                        gain.connect(this.filter);
+                        
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(320, now);
+                        osc.frequency.exponentialRampToValueAtTime(450, now + 0.07);
+                        
+                        gain.gain.setValueAtTime(0.1, now);
+                        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.07);
+                        
+                        osc.start(now);
+                        osc.stop(now + 0.07);
+                    }
+                    else if (type === 'drop') {
+                        // Глухой физический стук о дно
+                        const osc = this.ctx.createOscillator();
+                        const gain = this.ctx.createGain();
+                        osc.connect(gain);
+                        gain.connect(this.filter);
+                        
+                        osc.type = 'triangle';
+                        osc.frequency.setValueAtTime(80, now);
+                        osc.frequency.linearRampToValueAtTime(30, now + 0.14);
+                        
+                        gain.gain.setValueAtTime(0.22, now);
+                        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.14);
+                        
+                        osc.start(now);
+                        osc.stop(now + 0.14);
+                    }
+                    else if (type === 'clear') {
+                        // Переливающийся мажорный перебор (арфа)
+                        const notes = [440.00, 554.37, 659.25, 880.00];
+                        notes.forEach((freq, idx) => {
+                            const time = now + idx * 0.06;
+                            const osc = this.ctx.createOscillator();
+                            const gain = this.ctx.createGain();
+                            osc.connect(gain);
+                            gain.connect(this.filter);
+                            
+                            osc.type = 'sine';
+                            osc.frequency.setValueAtTime(freq, time);
+                            
+                            gain.gain.setValueAtTime(0, time);
+                            gain.gain.linearRampToValueAtTime(0.12, time + 0.02);
+                            gain.gain.exponentialRampToValueAtTime(0.001, time + 0.28);
+                            
+                            osc.start(time);
+                            osc.stop(time + 0.28);
+                        });
+                    }
+                    else if (type === 'gameover') {
+                        // Плавный нисходящий затухающий аккорд
+                        const notes = [329.63, 293.66, 261.63, 220.00];
+                        notes.forEach((freq, idx) => {
+                            const time = now + idx * 0.12;
+                            const osc = this.ctx.createOscillator();
+                            const gain = this.ctx.createGain();
+                            osc.connect(gain);
+                            gain.connect(this.filter);
+                            
+                            osc.type = 'triangle';
+                            osc.frequency.setValueAtTime(freq, time);
+                            osc.frequency.linearRampToValueAtTime(freq - 30, time + 0.4);
+                            
+                            gain.gain.setValueAtTime(0, time);
+                            gain.gain.linearRampToValueAtTime(0.12, time + 0.04);
+                            gain.gain.exponentialRampToValueAtTime(0.001, time + 0.45);
+                            
+                            osc.start(time);
+                            osc.stop(time + 0.45);
+                        });
+                    }
+                },
+                
+                // Красивый, глубокий и согревающий фоновый эмбиент в офлайне (Am - F - C - G)
+                startMusic() {
+                    if (this.musicInterval) return;
+                    this.currentStep = 0;
+                    
+                    const playStep = () => {
+                        if (SoundFX.musicMuted) return;
+                        if (this.ctx.state === 'suspended') this.ctx.resume();
+                        const now = this.ctx.currentTime;
+                        
+                        const bar = Math.floor(this.currentStep / 8);
+                        const stepInBar = this.currentStep % 8;
+                        
+                        const progressions = [
+                            { bass: 110.00, arp: [440.00, 523.25, 659.25, 523.25] },
+                            { bass: 87.31,  arp: [349.23, 440.00, 523.25, 440.00] },
+                            { bass: 130.81, arp: [329.63, 392.00, 523.25, 392.00] },
+                            { bass: 97.99,  arp: [293.66, 392.00, 493.88, 392.00] }
+                        ];
+                        
+                        const chord = progressions[bar];
+                        
+                        // Мягкий бас на 1 и 5 долю
+                        if (stepInBar === 0 || stepInBar === 4) {
+                            const bassOsc = this.ctx.createOscillator();
+                            const bassGain = this.ctx.createGain();
+                            bassOsc.connect(bassGain);
+                            bassGain.connect(this.filter);
+                            
+                            bassOsc.type = 'sine';
+                            bassOsc.frequency.setValueAtTime(chord.bass, now);
+                            
+                            bassGain.gain.setValueAtTime(0, now);
+                            bassGain.gain.linearRampToValueAtTime(0.15, now + 0.08);
+                            bassGain.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+                            
+                            bassOsc.start(now);
+                            bassOsc.stop(now + 0.6);
+                        }
+                        
+                        // Мелодичный перелив со звуковым эхом
+                        const noteFreq = chord.arp[stepInBar % 4];
+                        const arpOsc = this.ctx.createOscillator();
+                        const arpGain = this.ctx.createGain();
+                        
+                        arpOsc.connect(arpGain);
+                        arpGain.connect(this.delay); // Пускаем в эхо
+                        arpGain.connect(this.filter); // И в прямой микс
+                        
+                        arpOsc.type = 'sine';
+                        arpOsc.frequency.setValueAtTime(noteFreq, now);
+                        
+                        arpGain.gain.setValueAtTime(0, now);
+                        arpGain.gain.linearRampToValueAtTime(0.025, now + 0.04); // очень тихий фон
+                        arpGain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+                        
+                        arpOsc.start(now);
+                        arpOsc.stop(now + 0.25);
+                        
+                        this.currentStep = (this.currentStep + 1) % 32;
+                    };
+                    
+                    this.musicInterval = setInterval(playStep, 300); // 1/8 доли при темпе 100 BPM
+                },
+                
+                stopMusic() {
+                    if (this.musicInterval) {
+                        clearInterval(this.musicInterval);
+                        this.musicInterval = null;
+                    }
+                }
+            }
+        };
+
+        // --- ЛОГИКА ИГРЫ ТЕТРИС ---
+        const canvas = document.getElementById('tetris-canvas');
+        const context = canvas.getContext('2d');
+        const nextCanvas = document.getElementById('next-canvas');
+        const nextContext = nextCanvas.getContext('2d');
+
+        const BLOCK_SIZE = 30;
+
+        const PIECE_COLORS = {
+            'I': '#0ea5e9', 
+            'O': '#eab308', 
+            'T': '#a855f7', 
+            'S': '#22c55e', 
+            'Z': '#ef4444', 
+            'J': '#3b82f6', 
+            'L': '#f97316'  
+        };
+
+        const BOARD_THEMES = {
+            'dark': {
+                grid: 'rgba(255, 255, 255, 0.05)',
+                boardBg: '#151619'
+            },
+            'light': {
+                grid: 'rgba(0, 0, 0, 0.05)',
+                boardBg: '#f8fafc'
+            }
+        };
+
+        let currentTheme = 'dark'; 
+
+        const TETROMINOES = {
+            'I': [
+                [0, 0, 0, 0],
+                [1, 1, 1, 1],
+                [0, 0, 0, 0],
+                [0, 0, 0, 0]
+            ],
+            'O': [
+                [1, 1],
+                [1, 1]
+            ],
+            'T': [
+                [0, 1, 0],
+                [1, 1, 1],
+                [0, 0, 0]
+            ],
+            'S': [
+                [0, 1, 1],
+                [1, 1, 0],
+                [0, 0, 0]
+            ],
+            'Z': [
+                [1, 1, 0],
+                [0, 1, 1],
+                [0, 0, 0]
+            ],
+            'J': [
+                [1, 0, 0],
+                [1, 1, 1],
+                [0, 0, 0]
+            ],
+            'L': [
+                [0, 0, 1],
+                [1, 1, 1],
+                [0, 0, 0]
+            ]
+        };
+
+        const player = {
+            pos: {x: 0, y: 0},
+            matrix: null,
+            color: null,
+            type: null,
+            nextMatrix: null,
+            nextColor: null,
+            nextType: null
+        };
+
+        let arena = createMatrix(10, 20);
+
+        let lastTime = 0;
+        let dropCounter = 0;
+        let dropInterval = 1000;
+        let score = 0;
+        let level = 1;
+        let linesClearedTotal = 0;
+        let gameOver = false;
+        let isPaused = false;
+        let animationFrameId = null;
+
+        function createMatrix(w, h) {
+            const matrix = [];
+            while (h--) {
+                matrix.push(new Array(w).fill(0));
+            }
+            return matrix;
+        }
+
+        function collide(arena, player) {
+            const [m, o] = [player.matrix, player.pos];
+            for (let y = 0; y < m.length; ++y) {
+                for (let x = 0; x < m[y].length; ++x) {
+                    if (m[y][x] !== 0 &&
+                       (arena[y + o.y] === undefined ||
+                        arena[y + o.y][x + o.x] === undefined ||
+                        arena[y + o.y][x + o.x] !== 0)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        function merge(arena, player) {
+            player.matrix.forEach((row, y) => {
+                row.forEach((value, x) => {
+                    if (value !== 0) {
+                        arena[y + player.pos.y][x + player.pos.x] = player.type;
+                    }
+                });
+            });
+        }
+
+        function rotateMatrix(matrix, dir) {
+            for (let y = 0; y < matrix.length; ++y) {
+                for (let x = 0; x < y; ++x) {
+                    [
+                        matrix[x][y],
+                        matrix[y][x],
+                    ] = [
+                        matrix[y][x],
+                        matrix[x][y],
+                    ];
+                }
+            }
+            if (dir > 0) {
+                matrix.forEach(row => row.reverse());
+            } else {
+                matrix.reverse();
+            }
+        }
+
+        function playerRotate(dir) {
+            if (gameOver || isPaused) return;
+            const pos = player.pos.x;
+            let offset = 1;
+            rotateMatrix(player.matrix, dir);
+            let success = true;
+            while (collide(arena, player)) {
+                player.pos.x += offset;
+                offset = -(offset + (offset > 0 ? 1 : -1));
+                if (offset > player.matrix[0].length) {
+                    rotateMatrix(player.matrix, -dir);
+                    player.pos.x = pos;
+                    success = false;
+                    break;
+                }
+            }
+            if (success) {
+                SoundFX.play('rotate');
+            }
+            draw();
+        }
+
+        function playerMove(dir) {
+            if (gameOver || isPaused) return;
+            player.pos.x += dir;
+            if (collide(arena, player)) {
+                player.pos.x -= dir;
+            } else {
+                SoundFX.play('move');
+            }
+            draw();
+        }
+
+        function playerDrop() {
+            if (gameOver || isPaused) return;
+            player.pos.y++;
+            if (collide(arena, player)) {
+                player.pos.y--;
+                playerLockAndNext();
+            } else {
+                SoundFX.play('move');
+            }
+            dropCounter = 0;
+            draw();
+        }
+
+        function playerHardDrop() {
+            if (gameOver || isPaused) return;
+            while (!collide(arena, player)) {
+                player.pos.y++;
+            }
+            player.pos.y--;
+            SoundFX.play('drop');
+            playerLockAndNext();
+            draw();
+        }
+
+        function playerResetPosition() {
+            player.pos.y = 0;
+            player.pos.x = Math.floor(arena[0].length / 2) - Math.floor(player.matrix[0].length / 2);
+            
+            if (collide(arena, player)) {
+                triggerGameOver();
+            }
+        }
+
+        function playerLockAndNext() {
+            merge(arena, player);
+            sweepLines();
+            
+            player.matrix = player.nextMatrix;
+            player.type = player.nextType;
+            player.color = player.nextColor;
+
+            const pieces = 'TJLOSZI';
+            const nextType = pieces[Math.floor(Math.random() * pieces.length)];
+            player.nextMatrix = TETROMINOES[nextType];
+            player.nextType = nextType;
+            player.nextColor = PIECE_COLORS[nextType];
+
+            playerResetPosition();
+            drawNext();
+        }
+
+        function sweepLines() {
+            let rowCount = 1;
+            let clearedCount = 0;
+
+            outer: for (let y = arena.length - 1; y >= 0; --y) {
+                for (let x = 0; x < arena[y].length; ++x) {
+                    if (arena[y][x] === 0) {
+                        continue outer;
+                    }
+                }
+
+                const row = arena.splice(y, 1)[0].fill(0);
+                arena.unshift(row);
+                ++y;
+
+                clearedCount++;
+                score += rowCount * 100;
+                rowCount *= 2;
+            }
+
+            if (clearedCount > 0) {
+                linesClearedTotal += clearedCount;
+                level = Math.floor(linesClearedTotal / 10) + 1;
+                dropInterval = Math.max(100, 1000 - (level - 1) * 90);
+                
+                const container = document.querySelector('.canvas-container');
+                container.classList.add('shake');
+                setTimeout(() => container.classList.remove('shake'), 250);
+
+                SoundFX.play('clear');
+                updateUI();
+            }
+        }
+
+        function getGhostY() {
+            let ghostY = player.pos.y;
+            while (!collide(arena, {pos: {x: player.pos.x, y: ghostY + 1}, matrix: player.matrix})) {
+                ghostY++;
+            }
+            return ghostY;
+        }
+
+        function drawBlock(ctx, x, y, size, color, isGhost = false) {
+            ctx.shadowBlur = 0; 
+            ctx.lineWidth = 1.5;
+
+            const radius = 6;
+            const drawX = x * size + 1.5;
+            const drawY = y * size + 1.5;
+            const drawSize = size - 3;
+
+            ctx.beginPath();
+            ctx.roundRect(drawX, drawY, drawSize, drawSize, radius);
+
+            if (isGhost) {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0)';
+                ctx.strokeStyle = color;
+                ctx.stroke();
+            } else {
+                ctx.fillStyle = color;
+                ctx.strokeStyle = 'rgba(0, 0, 0, 0.15)'; 
+                ctx.fill();
+                ctx.stroke();
+
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
+                ctx.beginPath();
+                ctx.roundRect(drawX + 1.5, drawY + 1.5, drawSize - 3, drawSize / 3, radius - 2);
+                ctx.fill();
+            }
+        }
+
+        function drawGrid(ctx, width, height, size) {
+            ctx.strokeStyle = BOARD_THEMES[currentTheme].grid;
+            ctx.lineWidth = 1;
+
+            for (let x = 0; x <= width; x += size) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, height);
+                ctx.stroke();
+            }
+            for (let y = 0; y <= height; y += size) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(width, y);
+                ctx.stroke();
+            }
+        }
+
+        function draw() {
+            const boardTheme = BOARD_THEMES[currentTheme];
+            context.fillStyle = boardTheme.boardBg;
+            context.fillRect(0, 0, canvas.width, canvas.height);
+
+            drawGrid(context, canvas.width, canvas.height, BLOCK_SIZE);
+
+            arena.forEach((row, y) => {
+                row.forEach((value, x) => {
+                    if (value !== 0) {
+                        drawBlock(context, x, y, BLOCK_SIZE, PIECE_COLORS[value]);
+                    }
+                });
+            });
+
+            if (player.matrix && !gameOver) {
+                const ghostY = getGhostY();
+                
+                player.matrix.forEach((row, y) => {
+                    row.forEach((value, x) => {
+                        if (value !== 0) {
+                            drawBlock(context, player.pos.x + x, ghostY + y, BLOCK_SIZE, player.color, true);
+                        }
+                    });
+                });
+
+                player.matrix.forEach((row, y) => {
+                    row.forEach((value, x) => {
+                        if (value !== 0) {
+                            drawBlock(context, player.pos.x + x, player.pos.y + y, BLOCK_SIZE, player.color);
+                        }
+                    });
+                });
+            }
+        }
+
+        function drawNext() {
+            const boardTheme = BOARD_THEMES[currentTheme];
+            nextContext.fillStyle = boardTheme.boardBg;
+            nextContext.fillRect(0, 0, nextCanvas.width, nextCanvas.height);
+
+            if (!player.nextMatrix) return;
+
+            const size = 18; 
+            const matrix = player.nextMatrix;
+
+            const pieceW = matrix[0].length * size;
+            const pieceH = matrix.length * size;
+            const startX = (nextCanvas.width - pieceW) / 2;
+            const startY = (nextCanvas.height - pieceH) / 2;
+
+            matrix.forEach((row, y) => {
+                row.forEach((value, x) => {
+                    if (value !== 0) {
+                        nextContext.shadowBlur = 0;
+                        nextContext.fillStyle = player.nextColor;
+                        nextContext.strokeStyle = 'rgba(0, 0, 0, 0.12)';
+                        nextContext.lineWidth = 1.2;
+
+                        const drawX = startX + x * size + 1;
+                        const drawY = startY + y * size + 1;
+                        const drawSize = size - 2;
+
+                        nextContext.beginPath();
+                        nextContext.roundRect(drawX, drawY, drawSize, drawSize, 4);
+                        nextContext.fill();
+                        nextContext.stroke();
+
+                        nextContext.fillStyle = 'rgba(255, 255, 255, 0.15)';
+                        nextContext.beginPath();
+                        nextContext.roundRect(drawX + 1, drawY + 1, drawSize - 2, drawSize / 3, 2);
+                        nextContext.fill();
+                    }
+                });
+            });
+        }
+
+        function update(time = 0) {
+            if (isPaused || gameOver) return;
+
+            const deltaTime = time - lastTime;
+            lastTime = time;
+
+            dropCounter += deltaTime;
+            if (dropCounter > dropInterval) {
+                playerDrop();
+            }
+
+            draw();
+            animationFrameId = requestAnimationFrame(update);
+        }
+
+        function updateUI() {
+            const scoreVal = document.getElementById('score-val');
+            const levelVal = document.getElementById('level-val');
+
+            scoreVal.innerText = score;
+            levelVal.innerText = level;
+
+            scoreVal.classList.add('score-pulse');
+            levelVal.classList.add('score-pulse');
+
+            setTimeout(() => {
+                scoreVal.classList.remove('score-pulse');
+                levelVal.classList.remove('score-pulse');
+            }, 250);
+        }
+
+        function setTheme(themeName) {
+            currentTheme = themeName;
+            
+            const darkBtn = document.getElementById('dark-theme-btn');
+            const lightBtn = document.getElementById('light-theme-btn');
+            
+            if (themeName === 'light') {
+                document.body.className = 'light-theme';
+                lightBtn.classList.add('active');
+                darkBtn.classList.remove('active');
+            } else {
+                document.body.className = 'dark-theme';
+                darkBtn.classList.add('active');
+                lightBtn.classList.remove('active');
+            }
+            
+            draw();
+            drawNext();
+        }
+
+        function showMainMenu() {
+            isPaused = true;
+            SoundFX.music.stop(); 
+            cancelAnimationFrame(animationFrameId);
+            document.getElementById('game-screen').classList.add('hidden');
+            document.getElementById('main-menu').classList.remove('hidden');
+        }
+
+        function showGameScreen() {
+            document.getElementById('main-menu').classList.add('hidden');
+            document.getElementById('game-screen').classList.remove('hidden');
+            startNewGame();
+        }
+
+        function startNewGame() {
+            arena.forEach(row => row.fill(0));
+            score = 0;
+            level = 1;
+            linesClearedTotal = 0;
+            dropInterval = 1000;
+            gameOver = false;
+            isPaused = false;
+
+            document.getElementById('game-over-modal').classList.remove('active');
+            document.getElementById('pause-modal').classList.remove('active');
+            updateUI();
+
+            const pieces = 'TJLOSZI';
+            
+            const currentType = pieces[Math.floor(Math.random() * pieces.length)];
+            player.matrix = TETROMINOES[currentType];
+            player.type = currentType;
+            player.color = PIECE_COLORS[currentType];
+
+            const nextType = pieces[Math.floor(Math.random() * pieces.length)];
+            player.nextMatrix = TETROMINOES[nextType];
+            player.nextType = nextType;
+            player.nextColor = PIECE_COLORS[nextType];
+
+            playerResetPosition();
+            drawNext();
+            
+            // Инициализация аудиосистемы
+            SoundFX.init();
+            SoundFX.music.start();
+            
+            lastTime = performance.now();
+            cancelAnimationFrame(animationFrameId);
+            animationFrameId = requestAnimationFrame(update);
+        }
+
+        function triggerGameOver() {
+            gameOver = true;
+            SoundFX.music.stop(); 
+            document.getElementById('final-score').innerText = score;
+            document.getElementById('game-over-modal').classList.add('active');
+            SoundFX.play('gameover');
+        }
+
+        function togglePause() {
+            if (gameOver) return;
+            isPaused = !isPaused;
+
+            const pauseModal = document.getElementById('pause-modal');
+            if (isPaused) {
+                pauseModal.classList.add('active');
+                SoundFX.music.pause(); 
+                cancelAnimationFrame(animationFrameId);
+            } else {
+                pauseModal.classList.remove('active');
+                SoundFX.music.start(); 
+                lastTime = performance.now();
+                animationFrameId = requestAnimationFrame(update);
+            }
+        }
+
+        document.addEventListener('keydown', event => {
+            if (gameOver) return;
+
+            if (["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(event.code)) {
+                event.preventDefault();
+            }
+
+            if (isPaused && event.code !== 'KeyP') return;
+
+            if (event.code === 'ArrowLeft' || event.code === 'KeyA') {
+                playerMove(-1);
+            } else if (event.code === 'ArrowRight' || event.code === 'KeyD') {
+                playerMove(1);
+            } else if (event.code === 'ArrowDown' || event.code === 'KeyS') {
+                playerDrop();
+            } else if (event.code === 'ArrowUp' || event.code === 'KeyW') {
+                playerRotate(1);
+            } else if (event.code === 'Space') {
+                playerHardDrop();
+            } else if (event.code === 'KeyP') {
+                togglePause();
+                SoundFX.play('click');
+            }
+        });
+    </script>
+</body>
+</html>
