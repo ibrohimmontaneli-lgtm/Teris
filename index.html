@@ -3,31 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Modern Minimalist Tetris with Offline Audio Engine</title>
+    <title>Zen Neon Tetris - Ultimate Premium Dashboard</title>
     <style>
         :root {
-            /* Тёмная тема (по умолчанию) - глубокие темные переливы */
-            --bg-gradient: linear-gradient(-45deg, #0e1013, #15101f, #0c161d, #1a0f1d);
-            --panel-bg: rgba(28, 30, 36, 0.75);
-            --border-color: rgba(255, 255, 255, 0.08);
-            --text-color: #f1f2f6;
-            --text-secondary: #a0aec0;
-            --btn-gradient: linear-gradient(135deg, #4f46e5, #0ea5e9);
-            --panel-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
-            --back-btn-bg: rgba(255, 255, 255, 0.05);
-            --font-family: 'Segoe UI', Roboto, Helvetica, sans-serif;
+            /* Тёмная тема (по умолчанию) - глубокий переливающийся обсидиановый неон */
+            --bg-gradient: linear-gradient(-45deg, #06070a, #0d0916, #050e13, #120718, #050912);
+            --primary-glow: #6366f1;
+            --secondary-glow: #0ea5e9;
+            --panel-bg: rgba(18, 20, 26, 0.85);
+            --border-color: rgba(255, 255, 255, 0.06);
+            --border-highlight: rgba(99, 102, 241, 0.15);
+            --text-color: #f8fafc;
+            --text-secondary: #94a3b8;
+            --btn-gradient: linear-gradient(135deg, #6366f1, #0ea5e9);
+            --panel-shadow: 
+                inset 0 1px 1px rgba(255, 255, 255, 0.08),
+                0 25px 60px rgba(0, 0, 0, 0.6),
+                0 0 50px rgba(99, 102, 241, 0.12); /* Мягкое неоновое свечение вокруг консоли */
+            --back-btn-bg: rgba(255, 255, 255, 0.04);
+            --font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
 
-        /* Светлая тема - нежные пастельные переливы */
+        /* Светлая тема - шелковые нежные пастельные переливы */
         body.light-theme {
-            --bg-gradient: linear-gradient(-45deg, #e4e9f0, #e9e3f5, #e0f2fe, #f5e3e6);
-            --panel-bg: rgba(255, 255, 255, 0.85);
-            --border-color: rgba(0, 0, 0, 0.08);
+            --bg-gradient: linear-gradient(-45deg, #f1f5f9, #f5f3ff, #ecfdf5, #fdf2f8, #f0fdf4);
+            --primary-glow: #a78bfa;
+            --secondary-glow: #38bdf8;
+            --panel-bg: rgba(255, 255, 255, 0.9);
+            --border-color: rgba(0, 0, 0, 0.06);
+            --border-highlight: rgba(59, 130, 246, 0.08);
             --text-color: #1e293b;
             --text-secondary: #64748b;
             --btn-gradient: linear-gradient(135deg, #3b82f6, #10b981);
-            --panel-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
-            --back-btn-bg: rgba(0, 0, 0, 0.05);
+            --panel-shadow: 
+                inset 0 1px 1px rgba(255, 255, 255, 0.5),
+                0 20px 45px rgba(0, 0, 0, 0.04),
+                0 0 40px rgba(59, 130, 246, 0.08);
+            --back-btn-bg: rgba(0, 0, 0, 0.03);
+        }
+
+        /* Глобальный жесткий сброс для всех кнопок */
+        button {
+            background: none;
+            border: none;
+            outline: none;
+            color: inherit;
+            font: inherit;
+            padding: 0;
+            margin: 0;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+            border-radius: 0;
+            text-transform: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
         }
 
         * {
@@ -42,20 +75,42 @@
             font-family: var(--font-family);
             background: var(--bg-gradient);
             background-size: 400% 400%;
-            animation: gradientBG 15s ease infinite;
+            animation: gradientBG 20s ease infinite;
             color: var(--text-color);
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
             overflow: hidden;
-            transition: background 0.5s ease, color 0.5s ease;
+            position: relative;
+            transition: background 0.8s cubic-bezier(0.4, 0, 0.2, 1), color 0.5s ease;
         }
 
-        @keyframes gradientBG {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+        /* ПАРЯЩИЕ НЕОНОВЫЕ СФЕРЫ ДЛЯ ГЛУБИНЫ ИНТЕРФЕЙСА */
+        body::before, body::after {
+            content: '';
+            position: absolute;
+            width: 320px;
+            height: 320px;
+            border-radius: 50%;
+            background: var(--primary-glow);
+            filter: blur(130px);
+            z-index: -1;
+            opacity: 0.35;
+            animation: floatGlow 15s ease-in-out infinite alternate;
+            transition: background 0.8s ease;
+        }
+
+        body::after {
+            background: var(--secondary-glow);
+            animation-delay: -7s;
+            right: 15%;
+            top: 10%;
+        }
+
+        @keyframes floatGlow {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(60px, 40px) scale(1.2); }
         }
 
         .screen {
@@ -64,18 +119,18 @@
             align-items: center;
             justify-content: center;
             width: 100%;
-            max-width: 500px;
+            max-width: 530px;
             padding: 20px;
             text-align: center;
             opacity: 1;
             transform: scale(1);
-            transition: opacity 0.4s ease, transform 0.4s ease;
+            transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .screen.hidden {
             display: none !important;
             opacity: 0;
-            transform: scale(0.9);
+            transform: scale(0.96);
             pointer-events: none;
         }
 
@@ -83,84 +138,121 @@
             display: none !important;
         }
 
+        /* Премиум стеклянный дашборд */
         .glass-panel {
             background: var(--panel-bg);
             border: 1px solid var(--border-color);
-            border-radius: 20px;
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            padding: 35px;
+            border-top-color: rgba(255, 255, 255, 0.12); 
+            border-radius: 28px;
+            backdrop-filter: blur(25px) saturate(180%);
+            -webkit-backdrop-filter: blur(25px) saturate(180%);
+            padding: 35px 40px 40px 40px;
             box-shadow: var(--panel-shadow);
             width: 100%;
             position: relative;
             transition: background 0.5s ease, border-color 0.5s ease, box-shadow 0.5s ease;
         }
 
+        /* Высокотехнологичная информационная строка сверху консоли */
+        .hud-status-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 24px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .hud-dot {
+            width: 6px;
+            height: 6px;
+            background-color: #10b981;
+            border-radius: 50%;
+            box-shadow: 0 0 8px #10b981;
+            animation: blink 2s infinite ease-in-out;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        .hud-text {
+            font-size: 0.65rem;
+            font-family: monospace;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-secondary);
+        }
+
         h1.screen-title {
             font-size: 2.8rem;
             font-weight: 800;
-            letter-spacing: 3px;
-            margin-bottom: 25px;
+            letter-spacing: 8px;
+            margin-bottom: 30px;
             text-transform: uppercase;
             color: var(--text-color);
-            text-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            background: linear-gradient(180deg, var(--text-color) 0%, rgba(255,255,255,0.6) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
             transition: color 0.5s ease;
+        }
+
+        body.light-theme h1.screen-title {
+            background: linear-gradient(180deg, var(--text-color) 0%, rgba(0,0,0,0.5) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
         }
 
         .btn {
             background: var(--btn-gradient);
-            border: none;
-            border-radius: 12px;
+            border-radius: 16px;
             color: #fff;
-            padding: 16px 45px;
-            font-size: 1.15rem;
+            padding: 18px 45px;
+            font-size: 1.05rem;
             font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            letter-spacing: 2px;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
             transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
             width: 100%;
             max-width: 260px;
             margin-bottom: 35px;
         }
 
         .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
-            filter: brightness(1.05);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+            filter: brightness(1.08);
         }
 
         .btn:active {
             transform: translateY(1px);
         }
 
+        /* Настройки темы в меню */
         .settings-container {
-            margin-top: 15px;
+            margin-top: 20px;
             width: 100%;
             border-top: 1px solid var(--border-color);
-            padding-top: 20px;
+            padding-top: 24px;
             transition: border-color 0.5s ease;
         }
 
         .settings-title {
-            font-size: 0.9rem;
+            font-size: 0.75rem;
             text-transform: uppercase;
-            letter-spacing: 1.5px;
+            letter-spacing: 2.5px;
             margin-bottom: 15px;
             color: var(--text-secondary);
-            font-weight: 700;
+            font-weight: 800;
             transition: color 0.5s ease;
         }
 
         .toggle-theme-wrapper {
             display: flex;
-            background: rgba(0, 0, 0, 0.15);
-            border-radius: 12px;
+            background: rgba(0, 0, 0, 0.25);
+            border-radius: 14px;
             padding: 4px;
             gap: 4px;
             border: 1px solid var(--border-color);
@@ -168,75 +260,102 @@
         }
 
         body.light-theme .toggle-theme-wrapper {
-            background: rgba(0, 0, 0, 0.05);
+            background: rgba(0, 0, 0, 0.04);
         }
 
         .theme-switch-btn {
             flex: 1;
-            background: transparent;
-            border: none;
             color: var(--text-color);
-            padding: 10px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            font-weight: 600;
-            transition: all 0.25s ease;
-            opacity: 0.6;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity: 0.5;
         }
 
         .theme-switch-btn.active {
             background: var(--panel-bg);
             opacity: 1;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
             color: var(--text-color);
         }
 
+        /* Игровой экран */
         #game-screen {
             max-width: 650px;
         }
 
+        /* Хедер с жестким ограничением высоты */
         .game-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             width: 100%;
-            margin-bottom: 15px;
+            height: 42px; 
+            margin-bottom: 20px;
         }
 
-        .btn-back {
+        /* Унифицированные экшн-кнопки хедера */
+        .btn-action {
             background: var(--back-btn-bg);
             border: 1px solid var(--border-color);
-            border-radius: 10px;
+            border-radius: 12px;
             color: var(--text-color);
-            padding: 10px 14px;
-            cursor: pointer;
-            font-size: 0.85rem;
-            font-weight: 600;
-            display: flex;
+            padding: 0 16px;
+            height: 42px; /* Фиксированная высота */
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            display: inline-flex;
             align-items: center;
             gap: 6px;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        .btn-back:hover {
-            background: rgba(0, 0, 0, 0.08);
+        .btn-action:hover {
+            background: rgba(255, 255, 255, 0.08);
             border-color: var(--text-color);
+            transform: translateY(-1px);
         }
 
-        body.light-theme .btn-back:hover {
-            background: rgba(0, 0, 0, 0.04);
-        }
-
-        .btn-back svg {
+        .btn-action svg {
             width: 16px;
             height: 16px;
             stroke-width: 2.5;
         }
 
-        .game-area {
+        /* Круглые иконки хедера */
+        .btn-icon {
+            background: var(--back-btn-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            color: var(--text-color);
+            width: 42px;
+            height: 42px; /* Идентично кнопке "Назад" */
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .btn-icon:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: var(--text-color);
+            transform: translateY(-1px);
+        }
+
+        .btn-icon svg {
+            width: 18px;
+            height: 18px;
+            stroke-width: 2.5;
+        }
+
+        /* Объединенный дашборд игры */
+        .game-dashboard {
             display: flex;
             gap: 20px;
             justify-content: center;
@@ -244,76 +363,73 @@
             width: 100%;
         }
 
+        /* Игровое поле - ИСПРАВЛЕН БАГ С РАСТЯГИВАНИЕМ ПАНЕЛИ */
         .canvas-container {
-            border: 2px solid var(--border-color);
-            border-radius: 16px;
+            width: 280px;  
+            height: 560px; 
+            border: 1px solid var(--border-color);
+            border-top-color: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
             overflow: hidden;
-            box-shadow: var(--panel-shadow);
-            background: #000;
+            background: #030406;
             position: relative;
-            transition: border-color 0.5s ease, box-shadow 0.5s ease;
+            transition: border-color 0.5s ease;
+            animation: pulseBorder 4s ease-in-out infinite alternate;
         }
 
-        @keyframes shake {
-            0% { transform: translate(0, 0); }
-            15% { transform: translate(-3px, 1px); }
-            30% { transform: translate(3px, -1px); }
-            45% { transform: translate(-2px, -1px); }
-            60% { transform: translate(2px, 2px); }
-            75% { transform: translate(-1px, 1px); }
-            100% { transform: translate(0, 0); }
-        }
-
-        .shake {
-            animation: shake 0.25s cubic-bezier(.36,.07,.19,.97) both;
+        /* Пульсирующий неоновый контур поля */
+        @keyframes pulseBorder {
+            0% { box-shadow: var(--panel-shadow), 0 0 10px rgba(99, 102, 241, 0.1); }
+            100% { box-shadow: var(--panel-shadow), 0 0 25px rgba(99, 102, 241, 0.25); }
         }
 
         #tetris-canvas {
             display: block;
-            width: 280px;
-            height: 560px;
+            width: 100%;
+            height: 100%;
         }
 
-        .sidebar {
+        /* Сайдбар */
+        .sidebar-column {
             display: flex;
             flex-direction: column;
             gap: 15px;
             width: 140px;
         }
 
-        .sidebar-panel {
-            background: rgba(255, 255, 255, 0.03);
+        .sidebar-widget {
+            background: rgba(255, 255, 255, 0.01);
             border: 1px solid var(--border-color);
-            border-radius: 14px;
-            padding: 12px;
+            border-radius: 16px;
+            padding: 14px;
             text-align: center;
             backdrop-filter: blur(10px);
             transition: all 0.5s ease;
         }
 
-        body.light-theme .sidebar-panel {
+        body.light-theme .sidebar-widget {
             background: rgba(0, 0, 0, 0.02);
         }
 
         .panel-label {
-            font-size: 0.75rem;
+            font-size: 0.65rem;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 2px;
             color: var(--text-secondary);
-            margin-bottom: 6px;
-            font-weight: 700;
+            margin-bottom: 8px;
+            font-weight: 800;
             transition: color 0.5s ease;
         }
 
         .panel-value {
-            font-size: 1.4rem;
+            font-size: 1.5rem;
             font-weight: 800;
             color: var(--text-color);
             transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), color 0.5s ease;
         }
 
         .score-pulse {
-            transform: scale(1.25);
+            transform: scale(1.2);
         }
 
         .next-preview-box {
@@ -328,32 +444,30 @@
             height: 80px;
         }
 
+        /* Тактильные круглые кнопки управления */
         .controls-panel {
             width: 100%;
-            margin-top: 15px;
+            margin-top: 24px;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 12px;
         }
 
         .controls-row {
             display: flex;
             justify-content: center;
-            gap: 10px;
+            gap: 12px;
         }
 
         .btn-ctrl {
-            background: rgba(255, 255, 255, 0.03);
+            background: rgba(255, 255, 255, 0.02);
             border: 1px solid var(--border-color);
-            border-radius: 12px;
+            border-radius: 50%; 
             color: var(--text-color);
-            width: 52px;
-            height: 52px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s ease;
+            width: 58px;
+            height: 58px;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
 
         body.light-theme .btn-ctrl {
@@ -361,40 +475,49 @@
         }
 
         .btn-ctrl:hover {
-            background: rgba(0, 0, 0, 0.08);
+            background: rgba(255, 255, 255, 0.06);
             border-color: var(--text-color);
+            transform: scale(1.08) translateY(-2px);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.15);
+        }
+
+        body.light-theme .btn-ctrl:hover {
+            background: rgba(0, 0, 0, 0.05);
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
         }
 
         .btn-ctrl:active {
-            transform: scale(0.9);
+            transform: scale(0.92);
         }
 
         .btn-ctrl svg {
             width: 24px;
             height: 24px;
-            stroke-width: 2.2;
+            stroke-width: 2;
             stroke: currentColor;
             fill: none;
         }
 
         .btn-ctrl.btn-wide {
-            width: 114px;
+            width: 124px;
+            border-radius: 16px; 
         }
 
+        /* Модальные окна */
         .modal {
             position: absolute;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(15, 16, 20, 0.92);
-            backdrop-filter: blur(8px);
+            background: rgba(12, 13, 17, 0.95);
+            backdrop-filter: blur(12px);
             z-index: 10;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            border-radius: 16px;
+            border-radius: 20px;
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.3s ease;
@@ -402,7 +525,7 @@
         }
 
         body.light-theme .modal {
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(255, 255, 255, 0.96);
         }
 
         .modal.active {
@@ -411,11 +534,12 @@
         }
 
         .modal-title {
-            font-size: 1.8rem;
+            font-size: 2rem;
             text-transform: uppercase;
             color: var(--text-color);
             margin-bottom: 12px;
             font-weight: 800;
+            letter-spacing: 1px;
         }
 
         .modal-text {
@@ -429,12 +553,12 @@
             border: none;
             border-radius: 12px;
             color: #fff;
-            padding: 12px 30px;
+            padding: 12px 32px;
             font-weight: 700;
             cursor: pointer;
             transition: transform 0.2s ease;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 1px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
 
@@ -443,37 +567,39 @@
         }
 
         .keyboard-legend {
-            margin-top: 12px;
+            margin-top: 15px;
             font-size: 0.75rem;
             color: var(--text-secondary);
             text-align: center;
             letter-spacing: 0.5px;
+            opacity: 0.8;
         }
 
         @media (max-width: 480px) {
-            .game-area {
+            .game-dashboard {
                 flex-direction: column;
                 align-items: center;
                 gap: 15px;
             }
-            .sidebar {
+            .sidebar-column {
                 flex-direction: row;
                 width: 100%;
+                max-width: 280px;
                 justify-content: space-between;
             }
-            .sidebar-panel {
+            .sidebar-widget {
                 flex: 1;
                 padding: 8px;
             }
-            #tetris-canvas {
-                width: 230px;
-                height: 460px;
-            }
-            .next-preview-box {
-                height: 60px;
+            .canvas-container {
+                width: 240px;
+                height: 480px;
             }
             #next-canvas {
-                width: 60px;
+                width: 50px;
+                height: 50px;
+            }
+            .next-preview-box {
                 height: 60px;
             }
         }
@@ -484,6 +610,12 @@
     <!-- ГЛАВНОЕ МЕНЮ -->
     <div id="main-menu" class="screen">
         <div class="glass-panel">
+            <!-- HUD статус-бар -->
+            <div class="hud-status-bar">
+                <span class="hud-dot"></span>
+                <span class="hud-text">ZEN_ARCADE // v5.0_ACTIVE</span>
+            </div>
+
             <h1 class="screen-title">Тетрис</h1>
             
             <button class="btn" id="play-button" onclick="showGameScreen(); SoundFX.play('click')">
@@ -507,7 +639,8 @@
     <!-- ИГРОВОЙ ЭКРАН -->
     <div id="game-screen" class="screen hidden">
         <div class="game-header">
-            <button class="btn-back" onclick="showMainMenu(); SoundFX.play('click')">
+            <!-- Кнопка Назад - ИСПРАВЛЕНА -->
+            <button class="btn-action" onclick="showMainMenu(); SoundFX.play('click')">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
                     <line x1="19" y1="12" x2="5" y2="12"></line>
                     <polyline points="12 19 5 12 12 5"></polyline>
@@ -516,8 +649,8 @@
             </button>
             
             <div style="display: flex; gap: 6px; align-items: center;">
-                <!-- Кнопка Звуковых Эффектов -->
-                <button class="btn-back" onclick="SoundFX.toggleSfx(); SoundFX.play('click')" style="padding: 10px;" title="Звуковые эффекты">
+                <!-- Кнопка Звуковых Эффектов - ИСПРАВЛЕНА -->
+                <button class="btn-icon" onclick="SoundFX.toggleSfx(); SoundFX.play('click')" style="padding: 10px;" title="Звуковые эффекты">
                     <svg id="sfx-on-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                         <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
                         <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
@@ -529,8 +662,8 @@
                     </svg>
                 </button>
                 
-                <!-- Кнопка Фоновой Музыки -->
-                <button class="btn-back" onclick="SoundFX.toggleMusic(); SoundFX.play('click')" style="padding: 10px;" title="Музыка">
+                <!-- Кнопка Фоновой Музыки - ИСПРАВЛЕНА -->
+                <button class="btn-icon" onclick="SoundFX.toggleMusic(); SoundFX.play('click')" style="padding: 10px;" title="Музыка">
                     <svg id="music-on-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                         <path d="M9 18V5l12-2v13"></path>
                         <circle cx="6" cy="18" r="3"></circle>
@@ -543,8 +676,8 @@
                     </svg>
                 </button>
 
-                <!-- Кнопка Паузы -->
-                <button class="btn-back" onclick="togglePause(); SoundFX.play('click')" style="padding: 10px;" title="Пауза">
+                <!-- Кнопка Паузы - ИСПРАВЛЕНА -->
+                <button class="btn-icon" onclick="togglePause(); SoundFX.play('click')" style="padding: 10px;" title="Пауза">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
                         <rect x="6" y="4" width="4" height="16"></rect>
                         <rect x="14" y="4" width="4" height="16"></rect>
@@ -553,8 +686,15 @@
             </div>
         </div>
 
-        <div class="glass-panel" style="padding: 20px;">
-            <div class="game-area">
+        <div class="glass-panel" style="padding: 24px;">
+            <!-- HUD статус-бар -->
+            <div class="hud-status-bar">
+                <span class="hud-dot"></span>
+                <span class="hud-text">ARENA_HUD // CONSOLE_STABLE</span>
+            </div>
+
+            <div class="game-dashboard">
+                <!-- Поле -->
                 <div class="canvas-container">
                     <canvas id="tetris-canvas" width="300" height="600"></canvas>
                     
@@ -573,20 +713,21 @@
                     </div>
                 </div>
 
-                <div class="sidebar">
-                    <div class="sidebar-panel">
+                <!-- Сайдбар -->
+                <div class="sidebar-column">
+                    <div class="sidebar-widget">
                         <div class="panel-label">След. Блок</div>
                         <div class="next-preview-box">
                             <canvas id="next-canvas" width="80" height="80"></canvas>
                         </div>
                     </div>
 
-                    <div class="sidebar-panel">
+                    <div class="sidebar-widget">
                         <div class="panel-label">Очки</div>
                         <div id="score-val" class="panel-value">0</div>
                     </div>
 
-                    <div class="sidebar-panel">
+                    <div class="sidebar-widget">
                         <div class="panel-label">Уровень</div>
                         <div id="level-val" class="panel-value">1</div>
                     </div>
@@ -641,7 +782,7 @@
             sfxMuted: false,
             musicMuted: false,
             initialized: false,
-            isOfflineMode: false, // Автоматически переключится в true, если нет сети
+            isOfflineMode: false,
             audioCtx: null,
             buffers: {},
             urls: {
@@ -657,23 +798,19 @@
                 if (this.initialized) return;
                 this.initialized = true;
                 
-                // Проверяем наличие подключения к сети
                 this.isOfflineMode = !navigator.onLine;
                 
                 if (!this.isOfflineMode) {
-                    // Пытаемся предзагрузить сетевые звуки
                     for (const [name, url] of Object.entries(this.urls)) {
                         const audio = new Audio(url);
                         audio.preload = 'auto';
                         audio.addEventListener('error', () => {
-                            // Если произошла ошибка сети, переходим на автономный режим
                             this.isOfflineMode = true;
                         });
                         this.buffers[name] = audio;
                     }
                 }
                 
-                // Инициализируем аудиоконтекст для автономного синтезатора
                 try {
                     const AudioContext = window.AudioContext || window.webkitAudioContext;
                     if (AudioContext) {
@@ -728,7 +865,6 @@
                         if (type === 'rotate') clone.playbackRate = 1.35;
                         
                         clone.play().catch(e => {
-                            // Если воспроизведение сорвалось (например, пропал интернет), задействуем синтезатор
                             this.isOfflineMode = true;
                             this.offlineSynth.playSFX(type);
                         });
@@ -738,7 +874,7 @@
                 }
             },
 
-            // --- МОДУЛЬ УЮТНОЙ АКУСТИЧЕСКОЙ МУЗЫКИ (GITHUB + OFFLINE FALLBACK) ---
+            // --- Фоновая музыка ---
             music: {
                 audio: null,
                 
@@ -751,7 +887,6 @@
                     this.audio.volume = SoundFX.musicMuted ? 0.0 : 0.35;
                     
                     this.audio.addEventListener('error', () => {
-                        // При ошибке сетевого аудио переключаемся на офлайн-синтезатор музыки
                         SoundFX.isOfflineMode = true;
                         this.audio = null;
                         SoundFX.offlineSynth.startMusic();
@@ -813,13 +948,11 @@
                 init(ctx) {
                     this.ctx = ctx;
                     
-                    // Общий низкочастотный фильтр для создания теплого, мягкого и уютного аналогового звука
                     this.filter = ctx.createBiquadFilter();
                     this.filter.type = 'lowpass';
                     this.filter.frequency.setValueAtTime(700, ctx.currentTime); 
                     this.filter.connect(ctx.destination);
                     
-                    // Пространственное эхо
                     this.delay = ctx.createDelay(1.0);
                     this.feedback = ctx.createGain();
                     this.delay.delayTime.value = 0.35;
@@ -827,7 +960,7 @@
                     
                     this.delay.connect(this.feedback);
                     this.feedback.connect(this.delay);
-                    this.delay.connect(this.filter); // Направляем эхо на фильтр мягкости
+                    this.delay.connect(this.filter);
                 },
                 
                 playSFX(type) {
@@ -836,7 +969,6 @@
                     const now = this.ctx.currentTime;
                     
                     if (type === 'move' || type === 'click') {
-                        // Очень мягкий аналоговый щелчок
                         const osc = this.ctx.createOscillator();
                         const gain = this.ctx.createGain();
                         osc.connect(gain);
@@ -853,7 +985,6 @@
                         osc.stop(now + 0.05);
                     } 
                     else if (type === 'rotate') {
-                        // Мягкий упругий звук прокрутки
                         const osc = this.ctx.createOscillator();
                         const gain = this.ctx.createGain();
                         osc.connect(gain);
@@ -870,7 +1001,6 @@
                         osc.stop(now + 0.07);
                     }
                     else if (type === 'drop') {
-                        // Глухой физический стук о дно
                         const osc = this.ctx.createOscillator();
                         const gain = this.ctx.createGain();
                         osc.connect(gain);
@@ -887,7 +1017,6 @@
                         osc.stop(now + 0.14);
                     }
                     else if (type === 'clear') {
-                        // Переливающийся мажорный перебор (арфа)
                         const notes = [440.00, 554.37, 659.25, 880.00];
                         notes.forEach((freq, idx) => {
                             const time = now + idx * 0.06;
@@ -908,7 +1037,6 @@
                         });
                     }
                     else if (type === 'gameover') {
-                        // Плавный нисходящий затухающий аккорд
                         const notes = [329.63, 293.66, 261.63, 220.00];
                         notes.forEach((freq, idx) => {
                             const time = now + idx * 0.12;
@@ -931,7 +1059,6 @@
                     }
                 },
                 
-                // Красивый, глубокий и согревающий фоновый эмбиент в офлайне (Am - F - C - G)
                 startMusic() {
                     if (this.musicInterval) return;
                     this.currentStep = 0;
@@ -953,7 +1080,6 @@
                         
                         const chord = progressions[bar];
                         
-                        // Мягкий бас на 1 и 5 долю
                         if (stepInBar === 0 || stepInBar === 4) {
                             const bassOsc = this.ctx.createOscillator();
                             const bassGain = this.ctx.createGain();
@@ -971,20 +1097,19 @@
                             bassOsc.stop(now + 0.6);
                         }
                         
-                        // Мелодичный перелив со звуковым эхом
                         const noteFreq = chord.arp[stepInBar % 4];
                         const arpOsc = this.ctx.createOscillator();
                         const arpGain = this.ctx.createGain();
                         
                         arpOsc.connect(arpGain);
-                        arpGain.connect(this.delay); // Пускаем в эхо
-                        arpGain.connect(this.filter); // И в прямой микс
+                        arpGain.connect(this.delay); 
+                        arpGain.connect(this.filter); 
                         
                         arpOsc.type = 'sine';
                         arpOsc.frequency.setValueAtTime(noteFreq, now);
                         
                         arpGain.gain.setValueAtTime(0, now);
-                        arpGain.gain.linearRampToValueAtTime(0.025, now + 0.04); // очень тихий фон
+                        arpGain.gain.linearRampToValueAtTime(0.025, now + 0.04); 
                         arpGain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
                         
                         arpOsc.start(now);
@@ -993,7 +1118,7 @@
                         this.currentStep = (this.currentStep + 1) % 32;
                     };
                     
-                    this.musicInterval = setInterval(playStep, 300); // 1/8 доли при темпе 100 BPM
+                    this.musicInterval = setInterval(playStep, 300); 
                 },
                 
                 stopMusic() {
@@ -1005,7 +1130,7 @@
             }
         };
 
-        // --- ЛОГИКА ИГРЫ ТЕТРИС ---
+        // --- НАСТРОЙКА ИГРОВОГО ПОЛЯ И ЦВЕТОВОЙ ПАЛИТРЫ (NEON PREMIUM) ---
         const canvas = document.getElementById('tetris-canvas');
         const context = canvas.getContext('2d');
         const nextCanvas = document.getElementById('next-canvas');
@@ -1013,23 +1138,24 @@
 
         const BLOCK_SIZE = 30;
 
+        // Премиальные яркие неоновые цвета
         const PIECE_COLORS = {
-            'I': '#0ea5e9', 
-            'O': '#eab308', 
-            'T': '#a855f7', 
-            'S': '#22c55e', 
-            'Z': '#ef4444', 
-            'J': '#3b82f6', 
-            'L': '#f97316'  
+            'I': '#00ffff', // Неоново-голубой
+            'O': '#ffcc00', // Неоново-желтый
+            'T': '#a855f7', // Насыщенный фиолетовый
+            'S': '#10b981', // Изумрудно-зеленый
+            'Z': '#ff4b5c', // Неоново-алый
+            'J': '#3b82f6', // Глубокий синий
+            'L': '#ff8a00'  // Яркий оранжевый
         };
 
         const BOARD_THEMES = {
             'dark': {
-                grid: 'rgba(255, 255, 255, 0.05)',
-                boardBg: '#151619'
+                grid: 'rgba(255, 255, 255, 0.04)',
+                boardBg: '#050608'
             },
             'light': {
-                grid: 'rgba(0, 0, 0, 0.05)',
+                grid: 'rgba(0, 0, 0, 0.04)',
                 boardBg: '#f8fafc'
             }
         };
@@ -1220,7 +1346,7 @@
             
             player.matrix = player.nextMatrix;
             player.type = player.nextType;
-            player.color = player.nextColor;
+            player.color = PIECE_COLORS[player.type];
 
             const pieces = 'TJLOSZI';
             const nextType = pieces[Math.floor(Math.random() * pieces.length)];
@@ -1274,32 +1400,58 @@
             return ghostY;
         }
 
-        function drawBlock(ctx, x, y, size, color, isGhost = false) {
-            ctx.shadowBlur = 0; 
-            ctx.lineWidth = 1.5;
-
+        // КРАСИВЕЙШИЙ МНОГОПРОХОДНЫЙ НЕОНОВЫЙ БЛОК (СВЕРХЪЯРКИЙ БЛУМ)
+        function drawBlock(ctx, x, y, size, pieceType, isGhost = false) {
             const radius = 6;
-            const drawX = x * size + 1.5;
-            const drawY = y * size + 1.5;
+            const drawX = x + 1.5;
+            const drawY = y + 1.5;
             const drawSize = size - 3;
-
-            ctx.beginPath();
-            ctx.roundRect(drawX, drawY, drawSize, drawSize, radius);
+            const color = PIECE_COLORS[pieceType];
 
             if (isGhost) {
-                ctx.fillStyle = 'rgba(0, 0, 0, 0)';
-                ctx.strokeStyle = color;
+                ctx.shadowBlur = 0;
+                ctx.strokeStyle = currentTheme === 'dark' ? 'rgba(255, 255, 255, 0.22)' : 'rgba(0, 0, 0, 0.15)';
+                ctx.lineWidth = 1;
+                ctx.setLineDash([3, 3]);
+                ctx.beginPath();
+                ctx.roundRect(drawX, drawY, drawSize, drawSize, radius);
                 ctx.stroke();
+                ctx.setLineDash([]);
             } else {
+                // ПРЕДЕЛЬНО ЯРКИЙ МНОГОПРОХОДНЫЙ СВЕТОВОЙ КОНВЕЙЕР (BLOOM PIPELINE)
+
+                // 1. Проход (Ambient Bloom): Рассеянное широкое неоновое облако позади блока
+                ctx.shadowBlur = currentTheme === 'dark' ? 32 : 12;
+                ctx.shadowColor = color;
                 ctx.fillStyle = color;
-                ctx.strokeStyle = 'rgba(0, 0, 0, 0.15)'; 
+                ctx.beginPath();
+                ctx.roundRect(drawX, drawY, drawSize, drawSize, radius);
                 ctx.fill();
+
+                // 2. Проход (Core Bloom): Плотное белое свечение в середине для глубины
+                ctx.shadowBlur = currentTheme === 'dark' ? 12 : 4;
+                ctx.shadowColor = '#ffffff';
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.25)';
+                ctx.beginPath();
+                ctx.roundRect(drawX + 2, drawY + 2, drawSize - 4, drawSize - 4, radius - 1);
+                ctx.fill();
+
+                // Сбрасываем тени, чтобы контуры и стержень ядра были идеально четкими
+                ctx.shadowBlur = 0;
+
+                // 3. Проход (Laser Wireframe): Яркий "раскаленный" неоновый внутренний стержень
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 1.8;
+                ctx.beginPath();
+                ctx.roundRect(drawX + 3.5, drawY + 3.5, drawSize - 7, drawSize - 7, radius - 2);
                 ctx.stroke();
 
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
+                // 4. Проход (Crisp Border): Тонкая внешняя контрастная рамка для четкости геометрии
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 1;
                 ctx.beginPath();
-                ctx.roundRect(drawX + 1.5, drawY + 1.5, drawSize - 3, drawSize / 3, radius - 2);
-                ctx.fill();
+                ctx.roundRect(drawX, drawY, drawSize, drawSize, radius);
+                ctx.stroke();
             }
         }
 
@@ -1321,6 +1473,7 @@
             }
         }
 
+        // Отрисовка
         function draw() {
             const boardTheme = BOARD_THEMES[currentTheme];
             context.fillStyle = boardTheme.boardBg;
@@ -1328,21 +1481,23 @@
 
             drawGrid(context, canvas.width, canvas.height, BLOCK_SIZE);
 
+            // Отрисовка арены
             arena.forEach((row, y) => {
                 row.forEach((value, x) => {
                     if (value !== 0) {
-                        drawBlock(context, x, y, BLOCK_SIZE, PIECE_COLORS[value]);
+                        drawBlock(context, x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE, value);
                     }
                 });
             });
 
+            // Отрисовка активных элементов
             if (player.matrix && !gameOver) {
                 const ghostY = getGhostY();
                 
                 player.matrix.forEach((row, y) => {
                     row.forEach((value, x) => {
                         if (value !== 0) {
-                            drawBlock(context, player.pos.x + x, ghostY + y, BLOCK_SIZE, player.color, true);
+                            drawBlock(context, (player.pos.x + x) * BLOCK_SIZE, (ghostY + y) * BLOCK_SIZE, BLOCK_SIZE, player.type, true);
                         }
                     });
                 });
@@ -1350,7 +1505,7 @@
                 player.matrix.forEach((row, y) => {
                     row.forEach((value, x) => {
                         if (value !== 0) {
-                            drawBlock(context, player.pos.x + x, player.pos.y + y, BLOCK_SIZE, player.color);
+                            drawBlock(context, (player.pos.x + x) * BLOCK_SIZE, (player.pos.y + y) * BLOCK_SIZE, BLOCK_SIZE, player.type);
                         }
                     });
                 });
@@ -1375,24 +1530,7 @@
             matrix.forEach((row, y) => {
                 row.forEach((value, x) => {
                     if (value !== 0) {
-                        nextContext.shadowBlur = 0;
-                        nextContext.fillStyle = player.nextColor;
-                        nextContext.strokeStyle = 'rgba(0, 0, 0, 0.12)';
-                        nextContext.lineWidth = 1.2;
-
-                        const drawX = startX + x * size + 1;
-                        const drawY = startY + y * size + 1;
-                        const drawSize = size - 2;
-
-                        nextContext.beginPath();
-                        nextContext.roundRect(drawX, drawY, drawSize, drawSize, 4);
-                        nextContext.fill();
-                        nextContext.stroke();
-
-                        nextContext.fillStyle = 'rgba(255, 255, 255, 0.15)';
-                        nextContext.beginPath();
-                        nextContext.roundRect(drawX + 1, drawY + 1, drawSize - 2, drawSize / 3, 2);
-                        nextContext.fill();
+                        drawBlock(nextContext, startX + x * size, startY + y * size, size, player.nextType);
                     }
                 });
             });
